@@ -1,5 +1,18 @@
-const {Role, User} = require('./models/Models')
-const bcrypt = require('bcryptjs')
+const {Role, User} = require('./models/Models');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+
+
+const generateAccessToken = (id, role) => {
+    const payload = {
+        id,
+        role
+    }
+    return jwt.sign(payload, 'SECRET_KEY', {expiresIn: "24h"})
+}
+
+
 
 class AuthController{
 
@@ -18,12 +31,24 @@ class AuthController{
 
         } catch (e) {
             console.log(e);
-            res.status(400).json({message: e})
+            res.status(400).json(e.message)
         }
     }
 
     async login(req, res){
         try {
+            const {username, password} = req.body;
+            const condidate = await User.findOne({where: {username: username}});      
+            if (!condidate){
+                return res.status(400).json({message: 'Пользователь с таким именем не существует'});
+            }
+            const validPassword = bcrypt.compareSync(password, condidate.password);
+            if (!validPassword){
+                return res.status(400).json({message: 'Введен не верный пароль'});
+            }
+
+            const token = generateAccessToken(condidate.id, condidate.role);
+            res.json(token);
 
         } catch (e) {
             console.log(e);
