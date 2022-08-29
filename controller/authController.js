@@ -1,4 +1,4 @@
-const {Role, User} = require('./models/Models');
+const {Role, User} = require('../models/Models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -11,7 +11,6 @@ const generateAccessToken = (id, role) => {
     }
     return jwt.sign(payload, 'SECRET_KEY', {expiresIn: "24h"})
 }
-
 
 
 class AuthController{
@@ -48,19 +47,27 @@ class AuthController{
             }
 
             const token = generateAccessToken(condidate.id, condidate.role);
-            res.json(token);
+
+            let dataLogin = {
+                id: condidate.id,
+                username: condidate.username,
+                roleId: condidate.roleId,
+                token: token
+            }
+
+            res.json(dataLogin);
 
         } catch (e) {
             console.log(e);
-            res.static(400).json({message: 'Login error'})
+            res.status(400).json({message: 'Login error'})
         }
     }
 
     async getUsers(req, res){
         try {
-            res.json('test login');
+            res.status(200).json('Login is successful');
         } catch (e) {
-            console.log(e)
+            res.status(400).json({message: 'Login error'})
         }
     }
 }
